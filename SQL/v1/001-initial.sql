@@ -37,7 +37,7 @@ CREATE TABLE IF NOT EXISTS `mydb`.`page` (
   `page_url` VARCHAR(45) NOT NULL,
   `create_time` DATETIME NULL,
   PRIMARY KEY (`page_id`),
-  UNIQUE INDEX `UNIQUE_PAGE` (`page_url` ASC) INVISIBLE)
+  UNIQUE INDEX `UNIQUE_PAGE` (`page_url` ASC))
 ENGINE = InnoDB;
 
 
@@ -51,9 +51,9 @@ CREATE TABLE IF NOT EXISTS `mydb`.`user` (
   `email` VARCHAR(255) NOT NULL,
   `password` CHAR(70) NOT NULL,
   `create_time` TIMESTAMP NULL DEFAULT CURRENT_TIMESTAMP,
-  INDEX `INDEX_LOGIN` (`username` ASC, `password` ASC) INVISIBLE,
+  INDEX `INDEX_LOGIN` (`username` ASC, `password` ASC),
   PRIMARY KEY (`username`),
-  UNIQUE INDEX `UNIQUE_EMAIL` (`email` ASC) VISIBLE);
+  UNIQUE INDEX `UNIQUE_EMAIL` (`email` ASC));
 
 
 -- -----------------------------------------------------
@@ -65,43 +65,9 @@ CREATE TABLE IF NOT EXISTS `mydb`.`page_element_types` (
   `element_id` INT NOT NULL AUTO_INCREMENT,
   `element_name` VARCHAR(45) NULL,
   PRIMARY KEY (`element_id`),
-  UNIQUE INDEX `UNIQUE_ELEMENT` (`element_name` ASC) VISIBLE)
+  UNIQUE INDEX `UNIQUE_ELEMENT` (`element_name` ASC))
 ENGINE = InnoDB;
 
-
--- -----------------------------------------------------
--- Table `mydb`.`page_element`
--- -----------------------------------------------------
-DROP TABLE IF EXISTS `mydb`.`page_element` ;
-
-CREATE TABLE IF NOT EXISTS `mydb`.`page_element` (
-  `element_id` INT NOT NULL AUTO_INCREMENT,
-  `page_id` INT NOT NULL,
-  `element_type` INT NOT NULL,
-  `element_html_id` VARCHAR(45) NULL,
-  `element_html_attrs` JSON NULL,
-  `element_parent` INT NULL,
-  `element_position` INT NULL,
-  PRIMARY KEY (`element_id`, `page_id`),
-  INDEX `FK_PAGE_SECTION_ELEMENT_TYPES_idx` (`element_type` ASC) VISIBLE,
-  INDEX `INDEX_PARENT` (`element_parent` ASC) INVISIBLE,
-  INDEX `INDEX_PAGE` (`page_id` ASC) INVISIBLE,
-  CONSTRAINT `FK_PAGE_ELEMENT_ELEMENT_TYPES`
-    FOREIGN KEY (`element_type`)
-    REFERENCES `mydb`.`page_element_types` (`element_id`)
-    ON DELETE SET NULL
-    ON UPDATE CASCADE,
-  CONSTRAINT `FK_PAGE_ELEMENT_PARENT`
-    FOREIGN KEY (`element_parent`)
-    REFERENCES `mydb`.`page_element` (`element_id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE,
-  CONSTRAINT `FK_PAGE_ELEMENT_PAGE`
-    FOREIGN KEY (`page_id`)
-    REFERENCES `mydb`.`page` (`page_id`)
-    ON DELETE CASCADE
-    ON UPDATE CASCADE)
-ENGINE = InnoDB;
 
 
 -- -----------------------------------------------------
@@ -131,7 +97,7 @@ CREATE TABLE IF NOT EXISTS `mydb`.`user_record` (
   `create_time` DATETIME NULL,
   `record_element` INT NOT NULL,
   PRIMARY KEY (`record_id`, `record_element`),
-  INDEX `FK_RECORD_ELEMENT_idx` (`record_element` ASC) INVISIBLE,
+  INDEX `FK_RECORD_ELEMENT_idx` (`record_element` ASC),
   CONSTRAINT `FK_RECORD_ELEMENT`
     FOREIGN KEY (`record_element`)
     REFERENCES `mydb`.`page_element` (`element_id`)
@@ -150,8 +116,8 @@ CREATE TABLE IF NOT EXISTS `mydb`.`user_record_item` (
   `record_element` INT NOT NULL,
   `record_value` VARCHAR(5000) NULL,
   PRIMARY KEY (`record_id`, `record_element`),
-  INDEX `FK_RECORD_ITEM_RECORD_idx` (`record_id` ASC) VISIBLE,
-  INDEX `FK_RECORD_ITEM_ELEMENT_idx` (`record_element` ASC) VISIBLE,
+  INDEX `FK_RECORD_ITEM_RECORD_idx` (`record_id` ASC),
+  INDEX `FK_RECORD_ITEM_ELEMENT_idx` (`record_element` ASC),
   CONSTRAINT `FK_RECORD_ITEM_RECORD`
     FOREIGN KEY (`record_id`)
     REFERENCES `mydb`.`user_record` (`record_id`)
@@ -161,6 +127,41 @@ CREATE TABLE IF NOT EXISTS `mydb`.`user_record_item` (
     FOREIGN KEY (`record_element`)
     REFERENCES `mydb`.`page_element` (`element_id`)
     ON DELETE NO ACTION
+    ON UPDATE CASCADE)
+ENGINE = InnoDB;
+
+
+-- -----------------------------------------------------
+-- Table `mydb`.`page_element`
+-- -----------------------------------------------------
+DROP TABLE IF EXISTS `mydb`.`page_element` ;
+
+CREATE TABLE IF NOT EXISTS `mydb`.`page_element` (
+  `element_id` INT NOT NULL AUTO_INCREMENT,
+  `page_id` INT NOT NULL,
+  `element_type` INT NOT NULL,
+  `element_html_id` VARCHAR(45) NULL,
+  `element_html_attrs` VARCHAR(1024) NULL,
+  `element_parent` INT NULL,
+  `element_position` INT NULL,
+  PRIMARY KEY (`element_id`, `page_id`),
+  INDEX `FK_PAGE_SECTION_ELEMENT_TYPES_idx` (`element_type` ASC),
+  INDEX `INDEX_PARENT` (`element_parent` ASC),
+  INDEX `INDEX_PAGE` (`page_id` ASC),
+  CONSTRAINT `FK_PAGE_ELEMENT_ELEMENT_TYPES`
+    FOREIGN KEY (`element_type`)
+    REFERENCES `mydb`.`page_element_types` (`element_id`)
+    ON DELETE SET NULL
+    ON UPDATE CASCADE,
+  CONSTRAINT `FK_PAGE_ELEMENT_PARENT`
+    FOREIGN KEY (`element_parent`)
+    REFERENCES `mydb`.`page_element` (`element_id`)
+    ON DELETE CASCADE
+    ON UPDATE CASCADE,
+  CONSTRAINT `FK_PAGE_ELEMENT_PAGE`
+    FOREIGN KEY (`page_id`)
+    REFERENCES `mydb`.`page` (`page_id`)
+    ON DELETE CASCADE
     ON UPDATE CASCADE)
 ENGINE = InnoDB;
 
