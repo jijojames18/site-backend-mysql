@@ -1,6 +1,6 @@
 # site-backend-mysql
 
-Repository for holding the DB scripts for Webstie Builder CRM.
+Repository for holding the DB scripts for Website Builder CRM.
 
 To make changes, add a new folder(if an unreleased version doesn't already exist) inside sql folder and add a new file with the SQL queries.
 The file name should be of the format <number>-<feature/fix name> where number should be in ascending order.
