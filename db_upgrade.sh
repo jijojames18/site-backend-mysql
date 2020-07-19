@@ -1,16 +1,5 @@
 #!/bin/bash
 
-function exec_mysql_query()
-{
-  result=$($1)
-  if [ $? != 0]
-  then
-    exit $?
-  fi
-
-  return result
-}
-
 HOST="localhost"
 PORT=3306
 DB="mydb"
@@ -53,14 +42,26 @@ else
 fi
 
 db_list=$($mysql_check_db -se 'SHOW DATABASES')
+if [ $? != 0 ]
+then
+  exit 1
+fi
 has_required_db=$(echo ${db_list[@]} | grep -o "$DB" | wc -w)
 if [ $has_required_db == 0 ]
 then
   echo "Creating database $DB"
   $($mysql_check_db -se 'CREATE DATABASE $DB')
+  if [ $? != 0 ]
+  then
+    exit 1
+  fi
 fi
 
 tables_list=$($mysql_connect -se 'SHOW TABLES')
+if [ $? != 0 ]
+then
+  exit 1
+fi
 has_upgrade_table=$(echo ${tables_list[@]} | grep -o "upgrade_history" | wc -w)
 final_version="v1"
 if [ $has_upgrade_table == 1 ]
@@ -82,10 +83,18 @@ then
         then
           file_path="sql/$current_folder/$current_file"
           echo "***$file_path***"
-          test=$($mysql_connect < $file_path)
+          $($mysql_connect < $file_path)
+          if [ $? != 0 ]
+          then
+            exit 1
+          fi
           if [ $file_path != "sql/v1/001-initial.sql" ]
           then
             $($mysql_connect -se 'TRUNCATE upgrade_history; INSERT INTO upgrade_history VALUES(\"$file_path\")')
+            if [ $? != 0 ]
+            then
+              exit 1
+            fi
           fi
         fi
       done
@@ -99,9 +108,17 @@ else
       file_path="sql/$folder/$file"
       echo "***$file_path***"
       $($mysql_connect < $file_path)
+      if [ $? != 0 ]
+      then
+        exit 1
+      fi
       if [ $file_path != "sql/v1/001-initial.sql" ]
       then
         $($mysql_connect -se 'TRUNCATE upgrade_history; INSERT INTO upgrade_history VALUES(\"$file_path\")')
+        if [ $? != 0 ]
+        then
+          exit 1
+        fi
       fi
     done
   done
