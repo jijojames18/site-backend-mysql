@@ -139,7 +139,7 @@ DROP TABLE IF EXISTS `mydb`.`page_element` ;
 CREATE TABLE IF NOT EXISTS `mydb`.`page_element` (
   `element_id` INT NOT NULL AUTO_INCREMENT,
   `page_id` INT NOT NULL,
-  `element_type` INT NOT NULL,
+  `element_type` INT,
   `element_html_id` VARCHAR(45) NULL,
   `element_html_attrs` VARCHAR(1024) NULL,
   `element_parent` INT NULL,
